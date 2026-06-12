@@ -4,6 +4,13 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Calorías · Pablo</title>
+
+<!-- PWA / icono móvil -->
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Calorías"/>
+<meta name="theme-color" content="#639922"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI2IiBmaWxsPSIjNjM5OTIyIi8+PHRleHQgeD0iNjAiIHk9IjgwIiBmb250LXNpemU9IjY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn6WXPC90ZXh0Pjwvc3ZnPg=="/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -288,7 +295,7 @@ const DEFAULT_LIBRARY = [
 ];
 
 const MEALS = ["Desayuno","Comida","Cena"];
-const GOAL = 2500;
+const DEFAULT_GOAL = 2500;
 
 // ════════════════════════════════════════
 //  FIREBASE CONFIG
@@ -318,8 +325,9 @@ function initFirebase(){
 }
 
 function defaultState(){
-  return {days:{}, library: JSON.parse(JSON.stringify(DEFAULT_LIBRARY))};
+  return {days:{}, library: JSON.parse(JSON.stringify(DEFAULT_LIBRARY)), goal: DEFAULT_GOAL};
 }
+function getGoal(){ return (state&&state.goal)||DEFAULT_GOAL; }
 
 function loadLocalState(){
   try{
@@ -423,9 +431,12 @@ function uid(){return 'c'+Math.random().toString(36).slice(2,8);}
 function render(){
   const root=document.getElementById('root');
   let html=`
-  <div class="header">
-    <h1>Calorías · Pablo 🥗</h1>
-    <p>Tu contador nutricional personalizado</p>
+  <div class="header" style="display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <h1>Calorías · Pablo 🥗</h1>
+      <p>Tu contador nutricional personalizado</p>
+    </div>
+    <button onclick="openGoalEdit()" style="background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:6px 10px;font-size:13px;color:var(--text-2);font-family:inherit;margin-top:2px;white-space:nowrap">⚙️ Meta</button>
   </div>
   <div class="nav">
     <button class="nav-tab${view==='day'?' active':''}" onclick="setView('day')">📅 Día</button>
@@ -444,7 +455,7 @@ function render(){
 function renderDayView(){
   const plan=getDayPlan(currentDay);
   const tot=calcDay(plan);
-  const pct=Math.min(100,Math.round(tot.k/GOAL*100));
+  const pct=Math.min(100,Math.round(tot.k/getGoal()*100));
 
   // strip: today -3 … today +0, plus 3 future
   const keys=[];
@@ -466,10 +477,10 @@ function renderDayView(){
       <div style="display:flex;align-items:baseline;gap:4px">
         <span class="cal-big">${tot.k}</span><span class="cal-sub">kcal</span>
       </div>
-      <span class="cal-goal-txt">Meta: ${GOAL} kcal · ${pct}%</span>
+      <span class="cal-goal-txt">Meta: ${getGoal()} kcal · ${pct}%</span>
     </div>
     <div class="progress-track">
-      <div class="progress-fill${tot.k>GOAL?' over':''}" style="width:${pct}%"></div>
+      <div class="progress-fill${tot.k>getGoal()?' over':''}" style="width:${pct}%"></div>
     </div>
     <div class="macros">
       <div class="macro"><div class="macro-val">${tot.p}g</div><div class="macro-lbl">Proteínas</div></div>
@@ -556,7 +567,7 @@ function renderCalendarView(){
   // Selected day summary
   const plan=getDayPlan(currentDay);
   const tot=calcDay(plan);
-  const pct=Math.min(100,Math.round(tot.k/GOAL*100));
+  const pct=Math.min(100,Math.round(tot.k/getGoal()*100));
   const selLabel=fmtDate(currentDay);
   s+=`<div class="cal-day-summary">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -565,10 +576,10 @@ function renderCalendarView(){
     </div>
     <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
       <span style="font-size:24px;font-weight:600">${tot.k}</span>
-      <span style="font-size:13px;color:var(--text-2)">kcal · meta ${GOAL}</span>
+      <span style="font-size:13px;color:var(--text-2)">kcal · meta ${getGoal()}</span>
     </div>
     <div class="progress-track" style="margin-bottom:12px">
-      <div class="progress-fill${tot.k>GOAL?' over':''}" style="width:${pct}%"></div>
+      <div class="progress-fill${tot.k>getGoal()?' over':''}" style="width:${pct}%"></div>
     </div>
     <div class="cal-day-meals">`;
   MEALS.forEach(meal=>{
@@ -988,7 +999,40 @@ function saveNewDish(editMode){
   }
 }
 
-function closeModal(){
+// ─── EDITAR META DE CALORÍAS ───
+function openGoalEdit(){
+  editingLibId=null;
+  const m=document.getElementById('modalEl');
+  m.innerHTML=`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">⚙️ Meta de calorías</div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:1rem">Ajusta el límite diario de calorías.</p>
+    <div class="form-row">
+      <label class="form-label">Calorías diarias (kcal)</label>
+      <input class="form-input" id="goalInput" type="number" min="500" max="9999" step="50" value="${getGoal()}" />
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem">
+      ${[1500,1800,2000,2200,2500,2800,3000,3500].map(g=>`
+        <button onclick="document.getElementById('goalInput').value=${g}"
+          style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:${getGoal()===g?'var(--text)':'var(--bg)'};color:${getGoal()===g?'var(--bg)':'var(--text-2)'};cursor:pointer;font-size:12px;font-family:inherit">${g}</button>
+      `).join('')}
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveGoal()">Guardar</button>
+    </div>`;
+  document.getElementById('modalBd').classList.add('open');
+}
+
+function saveGoal(){
+  const val=parseInt(document.getElementById('goalInput').value);
+  if(!val||val<500){alert('Introduce un valor válido (mínimo 500)');return;}
+  state.goal=val;
+  saveState();closeModal();render();
+  toast(`Meta actualizada: ${val} kcal ✓`);
+}
+
+
   document.getElementById('modalBd').classList.remove('open');
   editingLibId=null;
 }
