@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Calorías · Pablo</title>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Calorías"/>
+<meta name="theme-color" content="#639922"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI2IiBmaWxsPSIjNjM5OTIyIi8+PHRleHQgeD0iNjAiIHk9IjgwIiBmb250LXNpemU9IjY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn6WXPC90ZXh0Pjwvc3ZnPg=="/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f9f8f6;--surface:#fff;--border:#e8e5df;--border-strong:#d0ccc4;
+  --text:#1a1917;--text-2:#6b6760;--text-3:#9e9b96;
+  --green:#3B6D11;--green-light:#eaf3de;--green-mid:#639922;
+  --red:#a32d2d;--red-light:#fcebeb;--radius:12px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:520px;margin:0 auto;padding:1.5rem 1rem 5rem}
+/* header */
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem}
+.header h1{font-size:22px;font-weight:600;letter-spacing:-.3px}
+.header p{font-size:13px;color:var(--text-2);margin-top:3px}
+.btn-goal{background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:6px 10px;font-size:12px;color:var(--text-2);font-family:inherit;white-space:nowrap;flex-shrink:0}
+/* nav */
+.nav{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.nav-tab{flex:1;padding:10px 4px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-2);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit}
+.nav-tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:500}
+/* summary */
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem}
+.summary-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:10px}
+.cal-big{font-size:36px;font-weight:600;letter-spacing:-1px;line-height:1}
+.cal-sub{font-size:13px;color:var(--text-2);margin-left:4px}
+.cal-goal-txt{font-size:12px;color:var(--text-3)}
+.progress-track{height:7px;border-radius:4px;background:#ede9e2;overflow:hidden;margin-bottom:14px}
+.progress-fill{height:100%;border-radius:4px;background:var(--green-mid);transition:width .4s}
+.progress-fill.over{background:var(--red)}
+.macros{display:grid;grid-template-columns:repeat(3,1fr)}
+.macro{text-align:center;padding:0 8px}
+.macro+.macro{border-left:1px solid var(--border)}
+.macro-val{font-size:16px;font-weight:600}
+.macro-lbl{font-size:11px;color:var(--text-3);margin-top:1px}
+/* day strip */
+.day-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:1.5rem;scrollbar-width:none}
+.day-strip::-webkit-scrollbar{display:none}
+.day-pill{flex-shrink:0;padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:transparent;cursor:pointer;font-size:13px;color:var(--text-2);font-family:inherit;white-space:nowrap;touch-action:manipulation}
+.day-pill.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+/* meal groups */
+.meal-group{margin-bottom:1.25rem}
+.meal-group-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;user-select:none}
+.meal-group-left{display:flex;align-items:center;gap:8px}
+.meal-group-name{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-2)}
+.meal-group-kcal{font-size:12px;color:var(--text-3)}
+.meal-group-chevron{font-size:11px;color:var(--text-3);transition:transform .2s}
+.meal-group-chevron.open{transform:rotate(180deg)}
+.meal-group-body{padding-top:6px;display:none}
+.meal-group-body.open{display:block}
+/* dish */
+.dish{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;overflow:hidden}
+.dish-header{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer}
+.dish-icon{width:30px;height:30px;border-radius:8px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.dish-name{flex:1;font-size:14px;font-weight:500}
+.dish-kcal{font-size:13px;font-weight:600;color:var(--green)}
+.dish-chevron{color:var(--text-3);font-size:11px;transition:transform .2s;margin-left:2px}
+.dish-chevron.open{transform:rotate(180deg)}
+.dish-del{background:none;border:none;cursor:pointer;color:var(--text-3);padding:4px 6px;border-radius:6px;font-size:13px;touch-action:manipulation}
+.dish-body{border-top:1px solid var(--border);padding:10px 12px;display:none}
+.dish-body.open{display:block}
+.ing-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px}
+.ing-name{flex:1;color:var(--text-2);font-size:12px}
+.ing-input{width:58px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:13px;text-align:right;background:var(--bg);color:var(--text);font-family:inherit}
+.ing-unit{width:20px;font-size:11px;color:var(--text-3)}
+.ing-kcal{width:50px;text-align:right;font-size:12px;color:var(--text-3)}
+.add-dish-btn{display:flex;align-items:center;gap:6px;width:100%;padding:10px 12px;border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-size:13px;color:var(--text-2);font-family:inherit;touch-action:manipulation;margin-top:2px}
+/* calendar */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cal-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:5px 14px;font-size:16px;color:var(--text-2)}
+.cal-month-label{font-size:16px;font-weight:600;text-transform:capitalize}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:1.5rem}
+.cal-dow{text-align:center;font-size:11px;font-weight:600;color:var(--text-3);padding:4px 0;text-transform:uppercase}
+.cal-cell{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:1px solid transparent;font-size:13px;position:relative}
+.cal-cell.other-month{color:var(--text-3)}
+.cal-cell.today{border-color:var(--green-mid);font-weight:600}
+.cal-cell.selected{background:var(--text);color:var(--bg)!important;border-color:var(--text)!important}
+.cal-cell.has-data::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--green-mid)}
+.cal-cell.selected.has-data::after{background:var(--bg)}
+.cal-day-summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem}
+.cal-meal-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.cal-meal-name{color:var(--text-2)}
+/* library */
+.lib-subtabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1rem}
+.lib-subtab{flex:1;padding:8px 4px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text-2);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit}
+.lib-subtab.active{color:var(--text);border-bottom-color:var(--text);font-weight:500}
+/* search - FIXED: uses controlled input via JS */
+.lib-search-wrap{position:relative;margin-bottom:1rem}
+.lib-search{width:100%;padding:9px 12px 9px 36px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--surface);color:var(--text);font-family:inherit;-webkit-appearance:none}
+.lib-search:focus{outline:none;border-color:var(--border-strong)}
+.lib-search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:14px;pointer-events:none}
+/* category groups */
+.cat-group{margin-bottom:8px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.cat-group-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);cursor:pointer;user-select:none}
+.cat-group-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
+.cat-group-count{font-size:11px;color:var(--text-3)}
+.cat-group-chevron{font-size:11px;color:var(--text-3);transition:transform .2s}
+.cat-group-chevron.open{transform:rotate(180deg)}
+.cat-group-body{display:none;border-top:1px solid var(--border)}
+.cat-group-body.open{display:block}
+/* lib cards */
+.lib-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--border)}
+.lib-card:last-child{border-bottom:none}
+.lib-icon{width:30px;height:30px;border-radius:8px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;font-weight:600;color:var(--green);font-size:11px}
+.lib-info{flex:1;min-width:0}
+.lib-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-sub{font-size:11px;color:var(--text-3);margin-top:1px}
+.lib-badge{display:inline-block;font-size:10px;padding:1px 5px;border-radius:8px;background:#ede9e2;color:var(--text-3);margin-left:4px;vertical-align:middle}
+.lib-badge.custom{background:var(--green-light);color:var(--green)}
+.lib-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-edit{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-2);font-size:12px;cursor:pointer;font-family:inherit;touch-action:manipulation}
+.btn-green{padding:5px 10px;border:none;border-radius:6px;background:var(--green-light);color:var(--green);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;touch-action:manipulation}
+.btn-green:hover,.btn-green:active{background:var(--green);color:#fff}
+.lib-bottom-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.lib-action-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;font-family:inherit;touch-action:manipulation}
+.lib-action-btn.dashed{border:1.5px dashed var(--border-strong);background:transparent;color:var(--text-2)}
+.lib-action-btn.green-outline{border:1.5px solid var(--green-mid);background:var(--green-light);color:var(--green);font-weight:500}
+/* picker */
+.picker-list{max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
+.picker-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)}
+.picker-item-info{flex:1;min-width:0}
+.picker-item-name{font-size:13px;font-weight:500}
+.picker-item-sub{font-size:11px;color:var(--text-3);margin-top:1px}
+.picker-item-actions{display:flex;gap:6px;flex-shrink:0}
+.picker-divider{display:flex;align-items:center;gap:8px;margin:8px 0}
+.picker-divider::before,.picker-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.picker-divider span{font-size:11px;color:var(--text-3)}
+/* modal */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius);padding:1.25rem;width:100%;max-width:460px;position:relative;margin:auto}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:1rem;padding-right:28px}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;cursor:pointer;color:var(--text-2);font-size:20px;line-height:1;touch-action:manipulation}
+.form-row{margin-bottom:10px}
+.form-label{font-size:12px;color:var(--text-2);margin-bottom:4px;display:block;font-weight:500}
+.form-input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:16px;background:var(--bg);color:var(--text);font-family:inherit;-webkit-appearance:none}
+.form-input:focus{outline:none;border-color:var(--border-strong)}
+select.form-input{font-size:14px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.ing-form-row{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+.ing-form-row .suggest-wrap{flex:1}
+.ing-form-row .form-input.sm{width:65px;flex:none;font-size:14px;padding:8px 6px;text-align:right}
+.ing-kcal-preview{font-size:12px;color:var(--text-3);min-width:48px;text-align:right;flex-shrink:0}
+.remove-ing{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:18px;padding:4px;flex-shrink:0;touch-action:manipulation}
+.suggest-wrap{position:relative}
+.suggest-list{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);z-index:400;max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.suggest-list.open{display:block}
+.suggest-item{padding:9px 10px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.suggest-item:last-child{border-bottom:none}
+.suggest-item:active{background:var(--bg)}
+.suggest-item-sub{font-size:11px;color:var(--text-3);flex-shrink:0;margin-left:6px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem}
+.btn-cancel{padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-size:14px;font-family:inherit;color:var(--text-2);touch-action:manipulation}
+.btn-save{padding:8px 16px;border:none;border-radius:var(--radius-sm);background:var(--text);color:var(--bg);cursor:pointer;font-size:14px;font-weight:500;font-family:inherit;touch-action:manipulation}
+.btn-danger{padding:8px 12px;border:1px solid var(--red);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-size:13px;font-family:inherit;color:var(--red);touch-action:manipulation}
+.add-ing-btn{display:flex;align-items:center;gap:4px;padding:8px 0;background:none;border:none;cursor:pointer;font-size:14px;color:var(--green);font-family:inherit;touch-action:manipulation}
+.meal-pick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.meal-pick-btn{padding:12px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;font-size:14px;font-family:inherit;touch-action:manipulation}
+.meal-pick-btn:active{background:var(--green-light);border-color:var(--green-mid)}
+/* camera */
+.camera-btn{display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;font-size:14px;color:var(--text-2);font-family:inherit;margin-bottom:12px;touch-action:manipulation}
+#cameraInput{display:none}
+.scan-preview{width:100%;border-radius:8px;margin-bottom:10px;max-height:200px;object-fit:cover;display:none}
+.scan-result{background:var(--green-light);border:1px solid var(--green-mid);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:none}
+.scan-status{font-size:13px;color:var(--text-3);text-align:center;padding:12px 0;display:none}
+/* toast */
+.ep-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center}
+.ep-modal.open{display:flex}
+.ep-inner{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;padding:1rem 1rem 0;width:100%;max-width:520px;max-height:80vh;display:flex;flex-direction:column}
+.ep-header{margin-bottom:10px}
+.ep-search{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:15px;background:var(--bg);color:var(--text);font-family:inherit}
+.ep-search:focus{outline:none;border-color:var(--border-strong)}
+.ep-cats{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;scrollbar-width:none;border-bottom:1px solid var(--border)}
+.ep-cats::-webkit-scrollbar{display:none}
+.ep-cat-btn{flex-shrink:0;padding:6px 10px;border:1px solid transparent;border-radius:8px;background:none;cursor:pointer;font-size:18px;touch-action:manipulation}
+.ep-cat-btn.active{background:var(--green-light);border-color:var(--green-mid)}
+.ep-body{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding:8px 0}
+.ep-section-title{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 6px}
+.ep-grid{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:8px}
+.ep-emoji{font-size:26px;padding:4px;border:2px solid transparent;border-radius:8px;background:none;cursor:pointer;line-height:1;touch-action:manipulation;transition:transform .1s}
+.ep-emoji:active{transform:scale(.85)}
+.ep-sel,.ep-emoji.ep-sel{background:var(--green-light)!important;outline:2px solid var(--green-mid);border-radius:8px}
+.ep-footer{display:flex;align-items:center;gap:10px;padding:10px 0 max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--border);margin-top:6px}
+.ep-preview{font-size:32px;min-width:40px;text-align:center}
+.ep-footer-hint{flex:1;font-size:13px;color:var(--text-3)}
+.ep-confirm{padding:9px 20px;border:none;border-radius:var(--radius-sm);background:var(--text);color:var(--bg);cursor:pointer;font-size:14px;font-weight:500;font-family:inherit;touch-action:manipulation}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--text);color:var(--bg);padding:9px 18px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:600;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.loading{text-align:center;padding:3rem 1rem;color:var(--text-3);font-size:14px}
+/* emoji picker */
+.ep-header{padding:12px 12px 8px;border-bottom:1px solid var(--border)}
+.ep-search{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:20px;font-size:14px;background:var(--bg);color:var(--text);font-family:inherit}
+.ep-search:focus{outline:none;border-color:var(--border-strong)}
+.ep-cats{display:flex;gap:2px;padding:6px 8px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.ep-cats::-webkit-scrollbar{display:none}
+.ep-cat-btn{flex-shrink:0;padding:4px 8px;border:none;background:none;cursor:pointer;font-size:18px;border-radius:6px;opacity:.5;touch-action:manipulation}
+.ep-cat-btn.active{background:var(--green-light);opacity:1}
+.ep-body{height:260px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px}
+.ep-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);padding:4px 2px 6px}
+.ep-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;margin-bottom:8px}
+.ep-emoji{font-size:24px;padding:4px;border:none;background:none;cursor:pointer;border-radius:6px;text-align:center;touch-action:manipulation;line-height:1.3}
+.ep-emoji:hover,.ep-emoji:active{background:var(--bg)}
+.ep-footer{padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ep-preview{font-size:28px;width:40px;text-align:center}
+.ep-footer-hint{font-size:12px;color:var(--text-3);flex:1}
+.ep-confirm{padding:6px 14px;border:none;border-radius:20px;background:var(--text);color:var(--bg);cursor:pointer;font-size:13px;font-weight:500;font-family:inherit}
+@media(max-width:480px){.app{padding:1rem .75rem 5rem}.meal-pick-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="app" id="root"><div class="loading">Cargando...</div></div>
+<div class="modal-backdrop" id="modalBd"><div class="modal" id="modalEl"></div></div>
+<div class="modal-backdrop" id="emojiModalBd" style="z-index:300">
+  <div class="modal" id="emojiModalEl" style="max-width:360px;padding:0;overflow:hidden"></div>
+</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="cameraInput" accept="image/*" capture="environment"/>
+<div class="ep-modal" id="emojiPickerModal" onclick="if(event.target===this)closeEmojiPicker()">
+  <div class="ep-inner" id="emojiPickerInner"></div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+// ══════════════════════════════════════════════════════
+//  INGREDIENTES BASE — Mercadona (valores reales de etiqueta)
+// ══════════════════════════════════════════════════════
+const INGREDIENTS_DEFAULT = [
+  // ACEITES
+  {id:"i001",name:"Aceite de oliva virgen extra",brand:"Hacendado",kcal:822,p:0,c:0,g:91.4,f:0,unit:"ml",supermarket:"Mercadona",category:"Aceites"},
+  // CEREALES / PASTA
+  {id:"i002",name:"Penne rigate integral",brand:"Hacendado",kcal:345,p:13.5,c:62,g:2.4,f:7,unit:"g",supermarket:"Mercadona",category:"Pasta y arroz"},
+  {id:"i003",name:"Espaguetis integrales",brand:"Hacendado",kcal:346,p:13,c:62,g:2.4,f:10,unit:"g",supermarket:"Mercadona",category:"Pasta y arroz"},
+  {id:"i004",name:"Arroz largo vaporizado",brand:"Hacendado",kcal:350,p:7,c:77,g:1,f:1,unit:"g",supermarket:"Mercadona",category:"Pasta y arroz"},
+  {id:"i005",name:"Arroz integral bolsa",brand:"Hacendado",kcal:150,p:3,c:32,g:1,f:1.8,unit:"g",supermarket:"Mercadona",category:"Pasta y arroz"},
+  {id:"i006",name:"Copos de avena finos",brand:"Hacendado",kcal:372,p:13,c:60,g:7,f:9,unit:"g",supermarket:"Mercadona",category:"Cereales"},
+  {id:"i007",name:"Tortillas integrales de trigo",brand:"Delibreads",kcal:271,p:9,c:41,g:5.8,f:3.5,unit:"g",supermarket:"Mercadona",category:"Cereales"},
+  {id:"i008",name:"Pan hamburguesa brioche",brand:"Hacendado",kcal:298,p:8,c:48,g:8,f:2,unit:"g",supermarket:"Mercadona",category:"Cereales"},
+  // SALSAS / CONSERVAS
+  {id:"i009",name:"Tomate frito con aceite de oliva",brand:"Hacendado",kcal:77,p:1.5,c:9.5,g:3.5,f:0,unit:"g",supermarket:"Mercadona",category:"Salsas"},
+  {id:"i010",name:"Guacamole",brand:"Hacendado",kcal:158,p:1.7,c:8,g:14,f:3.5,unit:"g",supermarket:"Mercadona",category:"Salsas"},
+  {id:"i011",name:"Chili con carne",brand:"Hacendado",kcal:90,p:6,c:12,g:2,f:3,unit:"g",supermarket:"Mercadona",category:"Salsas"},
+  // PESCADOS / MAR
+  {id:"i012",name:"Atún claro en aceite de oliva",brand:"Hacendado",kcal:149,p:1.9,c:2,g:13.7,f:5,unit:"g",supermarket:"Mercadona",category:"Pescados"},
+  {id:"i013",name:"Sardinillas en aceite de oliva",brand:"Ubago",kcal:199,p:20,c:0,g:14.5,f:0,unit:"g",supermarket:"Mercadona",category:"Pescados"},
+  {id:"i014",name:"Caballa en aceite de oliva",brand:"Hacendado",kcal:220,p:18,c:0,g:16,f:0,unit:"g",supermarket:"Mercadona",category:"Pescados"},
+  {id:"i015",name:"Salmón ahumado",brand:"Hacendado",kcal:157,p:20,c:0,g:9,f:0,unit:"g",supermarket:"Mercadona",category:"Pescados"},
+  // LÁCTEOS
+  {id:"i016",name:"Yogur griego natural",brand:"Schreiber",kcal:129,p:3.9,c:3.9,g:10.8,f:0,unit:"g",supermarket:"Mercadona",category:"Lácteos"},
+  {id:"i017",name:"Yogur proteína arándanos",brand:"Hacendado",kcal:53,p:8.3,c:5,g:0.5,f:0,unit:"g",supermarket:"Mercadona",category:"Lácteos"},
+  {id:"i018",name:"Queso rallado 4 quesos",brand:"Laforente",kcal:354,p:23,c:2.5,g:28,f:0,unit:"g",supermarket:"Mercadona",category:"Lácteos"},
+  {id:"i019",name:"Queso fresco batido 0%",brand:"Hacendado",kcal:45,p:8,c:3.5,g:0.2,f:0,unit:"g",supermarket:"Mercadona",category:"Lácteos"},
+  {id:"i020",name:"Leche entera",brand:"Hacendado",kcal:65,p:3.2,c:4.7,g:3.8,f:0,unit:"ml",supermarket:"Mercadona",category:"Lácteos"},
+  // HUEVOS
+  {id:"i021",name:"Huevos camperos L",brand:"Hacendado",kcal:150,p:12.5,c:0.5,g:11.1,f:0,unit:"g",supermarket:"Mercadona",category:"Huevos"},
+  // CARNES
+  {id:"i022",name:"Pechuga de pollo filetes",brand:"Hacendado",kcal:109,p:23,c:0,g:1.5,f:0,unit:"g",supermarket:"Mercadona",category:"Carnes"},
+  {id:"i023",name:"Pavo filetes pechuga",brand:"Hacendado",kcal:104,p:23,c:0,g:1,f:0,unit:"g",supermarket:"Mercadona",category:"Carnes"},
+  {id:"i024",name:"Carne picada mixta",brand:"Hacendado",kcal:218,p:17,c:0,g:17,f:0,unit:"g",supermarket:"Mercadona",category:"Carnes"},
+  {id:"i025",name:"Filete de ternera",brand:"Hacendado",kcal:131,p:21,c:0,g:5,f:0,unit:"g",supermarket:"Mercadona",category:"Carnes"},
+  {id:"i026",name:"Hamburguesa ternera",brand:"Hacendado",kcal:214,p:17,c:0,g:16,f:0,unit:"g",supermarket:"Mercadona",category:"Carnes"},
+  // FRUTAS Y VERDURAS
+  {id:"i027",name:"Plátano",brand:"",kcal:89,p:1.1,c:23,g:0.3,f:2.6,unit:"g",supermarket:"",category:"Frutas"},
+  {id:"i028",name:"Arándanos",brand:"Hacendado",kcal:57,p:0.7,c:14,g:0.3,f:2.4,unit:"g",supermarket:"Mercadona",category:"Frutas"},
+  {id:"i029",name:"Piña en su jugo",brand:"Hacendado",kcal:53,p:0.4,c:13,g:0.1,f:1,unit:"g",supermarket:"Mercadona",category:"Frutas"},
+  {id:"i030",name:"Melocotón en almíbar",brand:"Hacendado",kcal:60,p:0.4,c:15,g:0.1,f:0.8,unit:"g",supermarket:"Mercadona",category:"Frutas"},
+  {id:"i031",name:"Manzana",brand:"",kcal:52,p:0.3,c:14,g:0.2,f:2.4,unit:"g",supermarket:"",category:"Frutas"},
+  {id:"i032",name:"Patata",brand:"",kcal:77,p:2,c:17,g:0.1,f:2.2,unit:"g",supermarket:"",category:"Verduras"},
+  {id:"i033",name:"Batata / Boniato",brand:"",kcal:86,p:1.6,c:20,g:0.1,f:3,unit:"g",supermarket:"",category:"Verduras"},
+  {id:"i034",name:"Aguacate",brand:"",kcal:160,p:2,c:9,g:15,f:6.7,unit:"g",supermarket:"",category:"Verduras"},
+  {id:"i035",name:"Espinacas baby",brand:"Hacendado",kcal:23,p:2.9,c:3.6,g:0.4,f:2.2,unit:"g",supermarket:"Mercadona",category:"Verduras"},
+  {id:"i036",name:"Tomate triturado",brand:"Hacendado",kcal:32,p:1.5,c:5,g:0.3,f:1.5,unit:"g",supermarket:"Mercadona",category:"Verduras"},
+  // ACEITUNAS
+  {id:"i037",name:"Aceitunas verdes partidas",brand:"La Española",kcal:187,p:2.1,c:0.5,g:18.9,f:0,unit:"g",supermarket:"Mercadona",category:"Aceitunas y encurtidos"},
+  {id:"i038",name:"Aceitunas negras",brand:"Hacendado",kcal:116,p:0.8,c:6,g:11,f:3,unit:"g",supermarket:"Mercadona",category:"Aceitunas y encurtidos"},
+  // FRUTOS SECOS
+  {id:"i039",name:"Almendras crudas",brand:"Hacendado",kcal:575,p:21,c:9,g:50,f:12,unit:"g",supermarket:"Mercadona",category:"Frutos secos"},
+  {id:"i040",name:"Nuez de Brasil",brand:"Hacendado",kcal:659,p:14,c:12,g:67,f:7.5,unit:"g",supermarket:"Mercadona",category:"Frutos secos"},
+  {id:"i041",name:"Pistachos tostados",brand:"Hacendado",kcal:562,p:20,c:28,g:45,f:10,unit:"g",supermarket:"Mercadona",category:"Frutos secos"},
+  {id:"i042",name:"Crema de anacardos",brand:"Hacendado",kcal:574,p:18,c:26,g:46,f:3,unit:"g",supermarket:"Mercadona",category:"Frutos secos"},
+  {id:"i043",name:"Crema de cacahuete",brand:"Hacendado",kcal:594,p:25,c:14,g:50,f:5,unit:"g",supermarket:"Mercadona",category:"Frutos secos"},
+  // SUPLEMENTOS
+  {id:"i044",name:"Proteína whey chocolate",brand:"Hacendado Sport",kcal:385,p:74,c:8,g:6,f:2,unit:"g",supermarket:"Mercadona",category:"Suplementos"},
+  {id:"i045",name:"Proteína whey vainilla",brand:"Hacendado Sport",kcal:380,p:74,c:9,g:5,f:1,unit:"g",supermarket:"Mercadona",category:"Suplementos"},
+  // OTROS
+  {id:"i046",name:"Coco rallado",brand:"Hacendado",kcal:354,p:3.3,c:15,g:33,f:15,unit:"g",supermarket:"Mercadona",category:"Otros"},
+  {id:"i047",name:"Chocolate negro 70%",brand:"Hacendado",kcal:546,p:5,c:38,g:39,f:10,unit:"g",supermarket:"Mercadona",category:"Otros"},
+];
+
+// ══════════════════════════════════════════════════════
+//  PLATOS BASE
+// ══════════════════════════════════════════════════════
+const DISHES_DEFAULT = [
+  {id:"d1",name:"Avena y fruta",icon:"🥣",meal:"Desayuno",ings:[
+    {iid:"i006",a:80},{iid:"i042",a:20},{iid:"i044",a:25},
+    {iid:"i046",a:10},{iid:"i027",a:120},{iid:"i016",a:200},{iid:"i047",a:30}
+  ]},
+  {id:"d2",name:"Macarrones con atún",icon:"🍝",meal:"Comida",ings:[
+    {iid:"i012",a:80},{iid:"i018",a:90},{iid:"i030",a:150},
+    {iid:"i002",a:100},{iid:"i009",a:178}
+  ]},
+  {id:"d3",name:"Macarrones con carne",icon:"🍝",meal:"Comida",ings:[
+    {iid:"i024",a:90},{iid:"i018",a:90},{iid:"i030",a:150},
+    {iid:"i002",a:100},{iid:"i009",a:178}
+  ]},
+  {id:"d4",name:"Asado",icon:"🥩",meal:"Comida",ings:[
+    {iid:"i025",a:200},{iid:"i032",a:300},{iid:"i001",a:10},
+    {iid:"i037",a:100},{iid:"i040",a:10},{iid:"i029",a:140}
+  ]},
+  {id:"d5",name:"Patatas y pollo",icon:"🍗",meal:"Comida",ings:[
+    {iid:"i022",a:150},{iid:"i032",a:350},{iid:"i001",a:18},
+    {iid:"i021",a:60},{iid:"i040",a:5},{iid:"i029",a:180},{iid:"i037",a:100}
+  ]},
+  {id:"d6",name:"Hamburguesa",icon:"🍔",meal:"Comida",ings:[
+    {iid:"i008",a:82},{iid:"i026",a:150},{iid:"i010",a:30},
+    {iid:"i021",a:60},{iid:"i033",a:200},{iid:"i037",a:50},{iid:"i040",a:5}
+  ]},
+  {id:"d7",name:"Quesadillas de atún",icon:"🌮",meal:"Cena",ings:[
+    {iid:"i007",a:80},{iid:"i018",a:20},{iid:"i012",a:120},{iid:"i010",a:20}
+  ]},
+  {id:"d8",name:"Quesadillas chili",icon:"🌮",meal:"Cena",ings:[
+    {iid:"i007",a:80},{iid:"i011",a:210},{iid:"i010",a:15},
+    {iid:"i017",a:150},{iid:"i018",a:20}
+  ]},
+  {id:"d9",name:"Batata y pollo",icon:"🍠",meal:"Cena",ings:[
+    {iid:"i033",a:200},{iid:"i022",a:150},{iid:"i034",a:100},{iid:"i021",a:60}
+  ]},
+  {id:"d10",name:"Arroz y sardinas",icon:"🐟",meal:"Cena",ings:[
+    {iid:"i005",a:200},{iid:"i013",a:120},{iid:"i034",a:30},
+    {iid:"i017",a:300},{iid:"i029",a:140}
+  ]},
+];
+
+const MEALS = ["Desayuno","Comida","Cena"];
+const MEAL_ICONS = {Desayuno:"☀️",Comida:"🍽️",Cena:"🌙"};
+const DEFAULT_GOAL = 2500;
+
+// ══════════════════════════════════════════════════════
+//  FIREBASE
+// ══════════════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey:"AIzaSyBlPBERhImJoP13mTbn9xM_OEaB76MjlIY",
+  authDomain:"calorias-pablo.firebaseapp.com",
+  projectId:"calorias-pablo",
+  storageBucket:"calorias-pablo.firebasestorage.app",
+  messagingSenderId:"32504136782",
+  appId:"1:32504136782:web:a6a6d54445b4eb4c75ef1f"
+};
+let fsdb = null;
+const DOC = "users/pablo";
+
+function initFirebase(){
+  try{ firebase.initializeApp(FB_CONFIG); fsdb=firebase.firestore(); }
+  catch(e){ console.warn("Firebase:",e); }
+}
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+function freshState(){
+  return {
+    days:{},
+    dishes:JSON.parse(JSON.stringify(DISHES_DEFAULT)),
+    ingredients:JSON.parse(JSON.stringify(INGREDIENTS_DEFAULT)),
+    goal:DEFAULT_GOAL
+  };
+}
+let state=null;
+
+function getGoal(){ return (state&&state.goal)||DEFAULT_GOAL; }
+function getIng(iid){ return (state.ingredients||[]).find(i=>i.id===iid); }
+function getDayPlan(key){
+  if(!state.days[key]) state.days[key]={Desayuno:[],Comida:[],Cena:[]};
+  return state.days[key];
+}
+function calcIng(iid,a){
+  const i=getIng(iid); if(!i||!a) return {k:0,p:0,c:0,g:0};
+  const r=a/100;
+  return {k:Math.round(i.kcal*r),p:Math.round((i.p||0)*r),c:Math.round((i.c||0)*r),g:Math.round((i.g||0)*r)};
+}
+function calcDish(dish){
+  let k=0,p=0,c=0,g=0;
+  (dish.ings||[]).forEach(i=>{ const n=calcIng(i.iid,i.a);k+=n.k;p+=n.p;c+=n.c;g+=n.g; });
+  return {k,p,c,g};
+}
+function calcMeal(dishes){
+  let k=0,p=0,c=0,g=0;
+  (dishes||[]).forEach(d=>{ const n=calcDish(d);k+=n.k;p+=n.p;c+=n.c;g+=n.g; });
+  return {k,p,c,g};
+}
+function calcDay(plan){
+  let k=0,p=0,c=0,g=0;
+  MEALS.forEach(m=>{ const n=calcMeal(plan[m]||[]);k+=n.k;p+=n.p;c+=n.c;g+=n.g; });
+  return {k,p,c,g};
+}
+
+// ══════════════════════════════════════════════════════
+//  PERSISTENCE
+// ══════════════════════════════════════════════════════
+function saveLocal(){ try{localStorage.setItem('cal_v3',JSON.stringify(state));}catch(e){} }
+function loadLocal(){
+  try{
+    const s=JSON.parse(localStorage.getItem('cal_v3')||'null');
+    if(s&&s.dishes&&s.ingredients) return s;
+  }catch(e){}
+  return null;
+}
+function saveState(){ saveLocal(); if(!fsdb)return; fsdb.doc(DOC).set(state).catch(e=>console.warn(e)); }
+async function loadState(){
+  state=loadLocal()||freshState();
+  render();
+  if(!fsdb)return;
+  try{
+    const doc=await fsdb.doc(DOC).get();
+    if(doc.exists){
+      const r=doc.data();
+      if(r&&r.dishes&&r.ingredients){ state=r; saveLocal(); render(); }
+    } else { fsdb.doc(DOC).set(state).catch(e=>console.warn(e)); }
+  }catch(e){ console.warn(e); }
+}
+
+// ══════════════════════════════════════════════════════
+//  UI STATE
+// ══════════════════════════════════════════════════════
+let view='day', currentDay=todayKey(), calViewDate=new Date();
+let expandedDish={}, expandedMeal={Desayuno:true,Comida:true,Cena:true};
+let expandedCat={}, expandedLibCat={};
+let libSubTab='dishes', libDishSearch='', libIngSearch='';
+
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(key){
+  const d=new Date(key+'T12:00:00');
+  if(key===todayKey()) return 'Hoy';
+  return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+}
+function fmtDateShort(key){
+  const d=new Date(key+'T12:00:00');
+  if(key===todayKey()) return 'Hoy';
+  return d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric'});
+}
+function uid(){ return 'c'+Math.random().toString(36).slice(2,9); }
+
+// ══════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════
+function render(){
+  if(!state){ document.getElementById('root').innerHTML='<div class="loading">Cargando...</div>'; return; }
+  let html=`
+  <div class="header">
+    <div><h1>Calorías · Pablo 🥗</h1><p>Tu contador nutricional</p></div>
+    <button class="btn-goal" onclick="openGoalEdit()">⚙️ Meta: ${getGoal()} kcal</button>
+  </div>
+  <div class="nav">
+    <button class="nav-tab${view==='day'?' active':''}" onclick="setView('day')">📅 Día</button>
+    <button class="nav-tab${view==='calendar'?' active':''}" onclick="setView('calendar')">🗓 Mes</button>
+    <button class="nav-tab${view==='library'?' active':''}" onclick="setView('library')">📚 Librería</button>
+  </div>`;
+  if(view==='day') html+=renderDayView();
+  else if(view==='calendar') html+=renderCalView();
+  else html+=renderLibraryView();
+  document.getElementById('root').innerHTML=html;
+  // Attach search listeners without re-render (fixes mobile single-char bug)
+  attachLibSearchListeners();
+}
+
+function renderLibBodyOnly(){
+  const body=document.getElementById('libBody');
+  if(!body) return;
+  body.innerHTML = libSubTab==='dishes' ? renderDishLibBody() : renderIngLibBody();
+  attachLibSearchListeners();
+}
+
+function attachLibSearchListeners(){
+  const dsi=document.getElementById('libDishSearchInput');
+  if(dsi){
+    dsi.value=libDishSearch;
+    dsi.addEventListener('input',function(){ libDishSearch=this.value; renderLibBodyOnly(); });
+    dsi.addEventListener('compositionend',function(){ libDishSearch=this.value; renderLibBodyOnly(); });
+  }
+  const isi=document.getElementById('libIngSearchInput');
+  if(isi){
+    isi.value=libIngSearch;
+    isi.addEventListener('input',function(){ libIngSearch=this.value; renderLibBodyOnly(); });
+    isi.addEventListener('compositionend',function(){ libIngSearch=this.value; renderLibBodyOnly(); });
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  DAY VIEW
+// ══════════════════════════════════════════════════════
+function renderDayView(){
+  const plan=getDayPlan(currentDay), tot=calcDay(plan), goal=getGoal();
+  const pct=Math.min(100,Math.round(tot.k/goal*100));
+  const keys=[];
+  for(let i=-6;i<=0;i++){ const d=new Date(); d.setDate(d.getDate()+i); keys.push(d.toISOString().slice(0,10)); }
+  let s='<div class="day-strip">';
+  keys.forEach(k=>{ s+=`<button class="day-pill${k===currentDay?' active':''}" onclick="setDay('${k}')">${fmtDateShort(k)}</button>`; });
+  s+='</div>';
+  s+=`<div class="summary">
+    <div class="summary-top">
+      <div style="display:flex;align-items:baseline;gap:4px">
+        <span class="cal-big">${tot.k}</span><span class="cal-sub">kcal</span>
+      </div>
+      <span class="cal-goal-txt">Meta: ${goal} kcal · ${pct}%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill${tot.k>goal?' over':''}" style="width:${pct}%"></div></div>
+    <div class="macros">
+      <div class="macro"><div class="macro-val">${tot.p}g</div><div class="macro-lbl">Proteínas</div></div>
+      <div class="macro"><div class="macro-val">${tot.c}g</div><div class="macro-lbl">Carbos</div></div>
+      <div class="macro"><div class="macro-val">${tot.g}g</div><div class="macro-lbl">Grasas</div></div>
+    </div>
+  </div>`;
+  MEALS.forEach(meal=>{
+    const dishes=plan[meal]||[], mTot=calcMeal(dishes);
+    const mOpen=expandedMeal[meal]!==false;
+    s+=`<div class="meal-group">
+      <div class="meal-group-header" onclick="toggleMeal('${meal}')">
+        <div class="meal-group-left">
+          <span>${MEAL_ICONS[meal]||'🍽️'}</span>
+          <span class="meal-group-name">${meal}</span>
+          <span class="meal-group-kcal">${mTot.k} kcal · ${dishes.length} plato${dishes.length!==1?'s':''}</span>
+        </div>
+        <span class="meal-group-chevron${mOpen?' open':''}">▼</span>
+      </div>
+      <div class="meal-group-body${mOpen?' open':''}">`;
+    dishes.forEach((dish,di)=>{
+      if(!dish._uid) dish._uid=uid(); // migración de platos antiguos sin uid
+      const dTot=calcDish(dish), key=`${meal}-${dish._uid}`, open=!!expandedDish[key];
+      s+=`<div class="dish">
+        <div class="dish-header" onclick="toggleDish('${key}')">
+          <div class="dish-icon">${dish.icon||'🍽️'}</div>
+          <span class="dish-name">${dish.name}</span>
+          <span class="dish-kcal">${dTot.k} kcal</span>
+          <span class="dish-chevron${open?' open':''}">▼</span>
+          <button class="btn-edit" onclick="event.stopPropagation();openEditDayDish('${meal}','${dish._uid}')" style="padding:4px 6px;font-size:13px" title="Editar ingredientes">✏️</button>
+          <button class="dish-del" onclick="event.stopPropagation();delDish('${meal}','${dish._uid}')">✕</button>
+        </div>
+        <div class="dish-body${open?' open':''}">`;
+      (dish.ings||[]).forEach((ing,ii)=>{
+        const o=getIng(ing.iid), iK=calcIng(ing.iid,ing.a).k;
+        s+=`<div class="ing-row">
+          <span class="ing-name">${o?o.name:'?'}${o&&o.brand?` <span style="color:var(--text-3)">(${o.brand})</span>`:''}</span>
+          <input class="ing-input" type="number" min="1" step="1" value="${ing.a}"
+            onchange="updateIng('${meal}','${dish._uid}',${ii},this.value)" onclick="event.stopPropagation()"/>
+          <span class="ing-unit">${o?o.unit:'g'}</span>
+          <span class="ing-kcal">${iK} kcal</span>
+        </div>`;
+      });
+      s+='</div></div>';
+    });
+    s+=`<button class="add-dish-btn" onclick="openPicker('${meal}')">＋ Añadir plato a ${meal}</button>
+    </div></div>`;
+  });
+  return s;
+}
+
+// ══════════════════════════════════════════════════════
+//  CALENDAR VIEW
+// ══════════════════════════════════════════════════════
+function renderCalView(){
+  const y=calViewDate.getFullYear(),mo=calViewDate.getMonth();
+  const monthName=calViewDate.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+  const startOffset=(new Date(y,mo,1).getDay()+6)%7;
+  const daysInMonth=new Date(y,mo+1,0).getDate(), today=todayKey();
+  let s=`<div class="cal-nav">
+    <button class="cal-nav-btn" onclick="calMove(-1)">‹</button>
+    <span class="cal-month-label">${monthName}</span>
+    <button class="cal-nav-btn" onclick="calMove(1)">›</button>
+  </div>
+  <div class="cal-grid">
+    ${['Lu','Ma','Mi','Ju','Vi','Sá','Do'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}`;
+  for(let i=0;i<startOffset;i++) s+='<div class="cal-cell other-month"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const k=`${y}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hasData=state.days[k]&&MEALS.some(m=>(state.days[k][m]||[]).length>0);
+    let cls='cal-cell';
+    if(k===today) cls+=' today'; if(k===currentDay) cls+=' selected'; if(hasData) cls+=' has-data';
+    s+=`<div class="${cls}" onclick="calSelect('${k}')">${d}</div>`;
+  }
+  s+='</div>';
+  const plan=getDayPlan(currentDay),tot=calcDay(plan),goal=getGoal();
+  const pct=Math.min(100,Math.round(tot.k/goal*100));
+  s+=`<div class="cal-day-summary">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:14px;font-weight:500;text-transform:capitalize">${fmtDate(currentDay)}</span>
+      <button onclick="setView('day')" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--green);font-family:inherit">Ver detalle →</button>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
+      <span style="font-size:24px;font-weight:600">${tot.k}</span>
+      <span style="font-size:13px;color:var(--text-2)">kcal · meta ${goal}</span>
+    </div>
+    <div class="progress-track" style="margin-bottom:12px">
+      <div class="progress-fill${tot.k>goal?' over':''}" style="width:${pct}%"></div>
+    </div>`;
+  MEALS.forEach(m=>{ const mk=calcMeal(plan[m]||[]).k,dc=(plan[m]||[]).length;
+    s+=`<div class="cal-meal-row"><span class="cal-meal-name">${MEAL_ICONS[m]} ${m} (${dc} plato${dc!==1?'s':''})</span><span>${mk} kcal</span></div>`;
+  });
+  s+='</div>';
+  return s;
+}
+
+// ══════════════════════════════════════════════════════
+//  LIBRARY VIEW
+// ══════════════════════════════════════════════════════
+function renderLibraryView(){
+  let s=`<div class="lib-subtabs">
+    <button class="lib-subtab${libSubTab==='dishes'?' active':''}" onclick="setLibTab('dishes')">🍽️ Platos</button>
+    <button class="lib-subtab${libSubTab==='ingredients'?' active':''}" onclick="setLibTab('ingredients')">🥦 Ingredientes</button>
+  </div>
+  <div id="libBody">`;
+  s+= libSubTab==='dishes' ? renderDishLibBody() : renderIngLibBody();
+  s+='</div>';
+  return s;
+}
+
+// Iconos por categoría de ingrediente
+const CAT_ICONS = {
+  'Aceites':'🫒','Pasta y arroz':'🍚','Cereales':'🌾','Salsas':'🍅',
+  'Pescados':'🐟','Lácteos':'🥛','Huevos':'🥚','Carnes':'🥩',
+  'Frutas':'🍓','Verduras':'🥦','Aceitunas y encurtidos':'🫒',
+  'Frutos secos':'🥜','Suplementos':'💪','Otros':'📦'
+};
+function catIcon(cat){ return CAT_ICONS[cat]||'📦'; }
+
+function renderDishLibBody(){
+  const q=libDishSearch.toLowerCase();
+  const hasSearch=q.length>0;
+  const filtered=(state.dishes||[]).filter(d=>!q||d.name.toLowerCase().includes(q)||d.meal.toLowerCase().includes(q));
+
+  let s=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:1rem">
+    <div class="lib-search-wrap" style="margin-bottom:0;flex:1">
+      <span class="lib-search-icon">🔍</span>
+      <input class="lib-search" id="libDishSearchInput" placeholder="Buscar plato..." autocomplete="off" autocorrect="off" spellcheck="false" value="${libDishSearch}" style="margin-bottom:0"/>
+    </div>
+    <button class="btn-green" onclick="openNewDish(null)" style="white-space:nowrap;padding:8px 12px;border-radius:var(--radius-sm);flex-shrink:0">＋ Nuevo</button>
+  </div>`;
+
+  MEALS.forEach(meal=>{
+    const dishes=filtered.filter(d=>d.meal===meal);
+    if(!dishes.length&&hasSearch) return; // ocultar categoría vacía en búsqueda
+    // Auto-expandir si hay búsqueda activa, si no respetar estado manual
+    const catOpen=hasSearch ? true : expandedCat['dish_'+meal]!==false;
+    s+=`<div class="cat-group">
+      <div class="cat-group-header" onclick="toggleCat('dish_${meal}')">
+        <span class="cat-group-title">${MEAL_ICONS[meal]} ${meal}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="cat-group-count">${dishes.length} plato${dishes.length!==1?'s':''}</span>
+          <span class="cat-group-chevron${catOpen?' open':''}">▼</span>
+        </div>
+      </div>
+      <div class="cat-group-body${catOpen?' open':''}">`;
+    if(!dishes.length){
+      s+='<div style="padding:12px;font-size:13px;color:var(--text-3)">Sin platos</div>';
+    }
+    dishes.forEach(dish=>{
+      const tot=calcDish(dish), isDefault=DISHES_DEFAULT.some(d=>d.id===dish.id);
+      s+=`<div class="lib-card">
+        <div class="lib-icon" style="font-size:16px">${dish.icon||'🍽️'}</div>
+        <div class="lib-info">
+          <div class="lib-name">${dish.name}<span class="lib-badge${!isDefault?' custom':''}">${isDefault?'plan':'tuyo'}</span></div>
+          <div class="lib-sub">${tot.k} kcal · ${tot.p}g P · ${tot.c}g C · ${tot.g}g G</div>
+        </div>
+        <div class="lib-actions">
+          <button class="btn-edit" onclick="openEditDish('${dish.id}')">✏️</button>
+          <button class="btn-green" onclick="openLibDishAdd('${dish.id}')">Añadir</button>
+        </div>
+      </div>`;
+    });
+    s+='</div></div>';
+  });
+  return s;
+}
+
+function renderIngLibBody(){
+  const q=libIngSearch.toLowerCase();
+  const hasSearch=q.length>0;
+  const filtered=(state.ingredients||[]).filter(i=>
+    !q||i.name.toLowerCase().includes(q)||(i.brand||'').toLowerCase().includes(q)||(i.category||'').toLowerCase().includes(q)||(i.supermarket||'').toLowerCase().includes(q));
+  const cats=[...new Set((state.ingredients||[]).map(i=>i.category||'Otros'))].sort();
+
+  let s=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:1rem">
+    <div class="lib-search-wrap" style="margin-bottom:0;flex:1">
+      <span class="lib-search-icon">🔍</span>
+      <input class="lib-search" id="libIngSearchInput" placeholder="Buscar ingrediente, marca..." autocomplete="off" autocorrect="off" spellcheck="false" value="${libIngSearch}" style="margin-bottom:0"/>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button class="btn-green" onclick="openNewIng()" style="white-space:nowrap;padding:8px 10px;border-radius:var(--radius-sm)" title="Añadir ingrediente">＋ Nuevo</button>
+      <button class="btn-edit" onclick="openScanIng()" style="padding:8px 10px;border-radius:var(--radius-sm)" title="Escanear etiqueta">📷</button>
+    </div>
+  </div>`;
+
+  cats.forEach(cat=>{
+    const ings=filtered.filter(i=>(i.category||'Otros')===cat);
+    if(!ings.length) return;
+    // Auto-expandir si hay búsqueda activa
+    const catOpen=hasSearch ? true : expandedLibCat[cat]!==false;
+    const safecat=cat.replace(/'/g,"\\'");
+    s+=`<div class="cat-group">
+      <div class="cat-group-header" onclick="toggleLibCat('${safecat}')">
+        <span class="cat-group-title">${catIcon(cat)} ${cat}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="cat-group-count">${ings.length}</span>
+          <span class="cat-group-chevron${catOpen?' open':''}">▼</span>
+        </div>
+      </div>
+      <div class="cat-group-body${catOpen?' open':''}">`;
+    ings.forEach(ing=>{
+      const isDefault=INGREDIENTS_DEFAULT.some(i=>i.id===ing.id);
+      const icon=ing.emoji||catIcon(ing.category||'Otros');
+      s+=`<div class="lib-card">
+        <div class="lib-icon" style="font-size:18px">${icon}</div>
+        <div class="lib-info">
+          <div class="lib-name">${ing.name}${ing.brand?` <span style="color:var(--text-3);font-size:11px">${ing.brand}</span>`:''}<span class="lib-badge${!isDefault?' custom':''}">${isDefault?'base':'tuyo'}</span></div>
+          <div class="lib-sub">${ing.kcal} kcal · ${ing.p||0}g P · ${ing.c||0}g C · ${ing.g||0}g G / 100${ing.unit}${ing.supermarket?' · '+ing.supermarket:''}</div>
+        </div>
+        <div class="lib-actions">
+          <button class="btn-edit" onclick="openEditIng('${ing.id}')">✏️</button>
+        </div>
+      </div>`;
+    });
+    s+='</div></div>';
+  });
+  return s;
+}
+
+// ══════════════════════════════════════════════════════
+//  ACCIONES
+// ══════════════════════════════════════════════════════
+function setView(v){ view=v; render(); }
+function setDay(k){ currentDay=k; expandedDish={}; if(view!=='day') view='day'; render(); }
+function calMove(d){ calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+d,1); render(); }
+function calSelect(k){ currentDay=k; render(); }
+function setLibTab(t){ libSubTab=t; render(); }
+function toggleMeal(m){ expandedMeal[m]=!expandedMeal[m]; render(); }
+function toggleDish(key){ expandedDish[key]=!expandedDish[key]; render(); }
+function toggleCat(k){ expandedCat[k]=expandedCat[k]===false?true:false; render(); }
+function toggleLibCat(k){ expandedLibCat[k]=expandedLibCat[k]===false?true:false; render(); }
+
+function findDishIndexByUid(meal,dishUid){
+  const list=getDayPlan(currentDay)[meal]||[];
+  return list.findIndex(d=>d._uid===dishUid);
+}
+
+function updateIng(meal,dishUid,ii,val){
+  const v=Math.max(1,parseInt(val)||1);
+  const idx=findDishIndexByUid(meal,dishUid);
+  if(idx===-1) return;
+  getDayPlan(currentDay)[meal][idx].ings[ii].a=v;
+  saveState(); render();
+}
+function delDish(meal,dishUid){
+  const idx=findDishIndexByUid(meal,dishUid);
+  if(idx===-1) return;
+  getDayPlan(currentDay)[meal].splice(idx,1);
+  saveState(); render(); toast('Plato eliminado');
+}
+
+// ── Editar plato ya añadido al día (no toca la librería) ──
+let editDayMeal=null, editDayUid=null, editDayDish=null;
+
+function openEditDayDish(meal, dishUid){
+  editDayMeal=meal; editDayUid=dishUid;
+  const idx=findDishIndexByUid(meal,dishUid);
+  if(idx===-1) return;
+  // Copia profunda del plato del día para editar
+  const dish=getDayPlan(currentDay)[meal][idx];
+  editDayDish={name:dish.name, icon:dish.icon||'🍽️', ings:dish.ings.map(i=>({...i}))};
+  renderDayDishModal();
+  openModal();
+}
+
+function renderDayDishModal(){
+  let ingsHtml='';
+  editDayDish.ings.forEach((ing,i)=>{
+    const o=getIng(ing.iid), iK=o?Math.round(o.kcal*ing.a/100):0;
+    ingsHtml+=`<div class="ing-form-row">
+      <div class="suggest-wrap" style="flex:1">
+        <input class="form-input" id="ddi${i}" placeholder="Buscar ingrediente..." value="${o?o.name:''}" autocomplete="off" autocorrect="off"
+          oninput="filterDDSug(${i},this.value)"
+          onfocus="filterDDSug(${i},this.value)"
+          onblur="setTimeout(()=>closeSug('ddsl${i}'),200)"/>
+        <ul class="suggest-list" id="ddsl${i}"></ul>
+      </div>
+      <input class="form-input sm" type="number" min="1" step="1" value="${ing.a}"
+        oninput="editDayDish.ings[${i}].a=parseInt(this.value)||1;refreshDDK(${i})"/>
+      <span class="ing-kcal-preview" id="ddk${i}">${iK>0?iK+' k':''}</span>
+      <button class="remove-ing" onclick="editDayDish.ings.splice(${i},1);renderDayDishModal()">✕</button>
+    </div>`;
+  });
+  const total=editDayDish.ings.reduce((s,i)=>{const o=getIng(i.iid);return s+(o?Math.round(o.kcal*i.a/100):0);},0);
+
+  document.getElementById('modalEl').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">✏️ ${editDayDish.name}</div>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:10px">Solo para hoy — no modifica la librería</p>
+    <div><label class="form-label">Ingredientes ${total>0?`<span style="color:var(--green);font-weight:600;margin-left:6px">${total} kcal total</span>`:''}</label>
+    ${ingsHtml}
+    <button class="add-ing-btn" onclick="editDayDish.ings.push({iid:'',a:100});renderDayDishModal()">+ añadir ingrediente</button></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveDayDishModal()">Guardar</button>
+    </div>`;
+}
+
+function filterDDSug(i,val){
+  const list=document.getElementById('ddsl'+i); if(!list) return;
+  const q=(val||'').toLowerCase();
+  if(!q){list.classList.remove('open');return;}
+  const hits=(state.ingredients||[]).filter(ing=>ing.name.toLowerCase().includes(q)||(ing.brand||'').toLowerCase().includes(q)).slice(0,8);
+  if(!hits.length){list.classList.remove('open');return;}
+  list.innerHTML=hits.map(ing=>`<li class="suggest-item" onmousedown="pickDDIng(${i},'${ing.id}')">
+    <span>${ing.name}${ing.brand?` <span style="color:var(--text-3)">${ing.brand}</span>`:''}</span>
+    <span class="suggest-item-sub">${ing.kcal}/${ing.unit}</span>
+  </li>`).join('');
+  list.classList.add('open');
+}
+
+function pickDDIng(i,iid){
+  editDayDish.ings[i].iid=iid;
+  renderDayDishModal();
+}
+
+function refreshDDK(i){
+  const ing=editDayDish.ings[i], o=getIng(ing.iid);
+  const el=document.getElementById('ddk'+i);
+  if(el){const k=o?Math.round(o.kcal*ing.a/100):0; el.textContent=k>0?k+' k':'';}
+}
+
+function saveDayDishModal(){
+  const valid=editDayDish.ings.filter(i=>i.iid&&getIng(i.iid));
+  if(!valid.length){alert('Añade al menos un ingrediente');return;}
+  editDayDish.ings=valid;
+  const idx=findDishIndexByUid(editDayMeal,editDayUid);
+  if(idx===-1){ closeModal(); return; }
+  const plan=getDayPlan(currentDay);
+  plan[editDayMeal][idx]={...plan[editDayMeal][idx],...editDayDish};
+  saveState(); closeModal(); render(); toast('Plato actualizado ✓');
+}
+
+// ══════════════════════════════════════════════════════
+//  PICKER
+// ══════════════════════════════════════════════════════
+let pickerMeal=null, pickerSearch='';
+function openPicker(meal){ pickerMeal=meal; pickerSearch=''; renderPicker(); openModal(); }
+function renderPicker(){
+  const meal=pickerMeal, q=pickerSearch.toLowerCase();
+  const all=(state.dishes||[]).filter(d=>!q||d.name.toLowerCase().includes(q));
+  const same=all.filter(d=>d.meal===meal), others=all.filter(d=>d.meal!==meal);
+  const row=d=>{ const tot=calcDish(d); return `<div class="picker-item">
+    <span style="font-size:18px">${d.icon||'🍽️'}</span>
+    <div class="picker-item-info"><div class="picker-item-name">${d.name}</div><div class="picker-item-sub">${tot.k} kcal</div></div>
+    <div class="picker-item-actions">
+      <button class="btn-edit" onclick="openEditAndAdd('${d.id}','${meal}')">✏️</button>
+      <button class="btn-green" onclick="quickAdd('${d.id}','${meal}')">Añadir</button>
+    </div>
+  </div>`; };
+  let listHtml=same.map(row).join('');
+  if(others.length) listHtml+=`<div class="picker-divider"><span>Otros platos</span></div>`+others.map(row).join('');
+  if(!all.length) listHtml='<div style="text-align:center;padding:1.5rem;color:var(--text-3);font-size:13px">Sin resultados</div>';
+  document.getElementById('modalEl').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">${MEAL_ICONS[meal]} Añadir a ${meal}</div>
+    <input class="lib-search" id="pickerSearchInput" placeholder="Buscar plato..." autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:10px" value="${pickerSearch}"/>
+    <div class="picker-list" id="pickerList">${listHtml}</div>
+    <div class="picker-divider"><span>o</span></div>
+    <button class="lib-action-btn dashed" onclick="openNewDish('${meal}')">＋ Crear plato nuevo</button>`;
+  // Attach search without re-rendering whole app
+  const psi=document.getElementById('pickerSearchInput');
+  if(psi) psi.addEventListener('input',function(){
+    pickerSearch=this.value;
+    const q2=pickerSearch.toLowerCase();
+    const a2=(state.dishes||[]).filter(d=>!q2||d.name.toLowerCase().includes(q2));
+    const s2=a2.filter(d=>d.meal===meal),o2=a2.filter(d=>d.meal!==meal);
+    let lh=s2.map(row).join('');
+    if(o2.length) lh+=`<div class="picker-divider"><span>Otros platos</span></div>`+o2.map(row).join('');
+    if(!a2.length) lh='<div style="text-align:center;padding:1.5rem;color:var(--text-3);font-size:13px">Sin resultados</div>';
+    document.getElementById('pickerList').innerHTML=lh;
+  });
+}
+function quickAdd(dishId,meal){
+  const dish=(state.dishes||[]).find(d=>d.id===dishId); if(!dish) return;
+  getDayPlan(currentDay)[meal].push({_uid:uid(),name:dish.name,icon:dish.icon,ings:dish.ings.map(i=>({...i}))});
+  saveState(); closeModal(); render(); toast(`${dish.name} añadido ✓`);
+}
+
+// ══════════════════════════════════════════════════════
+//  MODAL PLATO
+// ══════════════════════════════════════════════════════
+let tempDish=null, modalMeal=null, editingDishId=null, editModeAddOnly=false;
+
+function openNewDish(meal){ editingDishId=null; editModeAddOnly=false; modalMeal=meal||null; tempDish={name:'',icon:'🍽️',meal:meal||'Comida',ings:[{iid:'',a:100}]}; renderDishModal(); openModal(); }
+function openEditDish(id){ const d=(state.dishes||[]).find(x=>x.id===id); if(!d) return; editingDishId=id; editModeAddOnly=false; modalMeal=null; tempDish={name:d.name,icon:d.icon||'🍽️',meal:d.meal,ings:d.ings.map(i=>({...i}))}; renderDishModal(); openModal(); }
+function openEditAndAdd(id,meal){ const d=(state.dishes||[]).find(x=>x.id===id); if(!d) return; editingDishId=null; editModeAddOnly=true; modalMeal=meal; tempDish={name:d.name,icon:d.icon||'🍽️',meal:meal,ings:d.ings.map(i=>({...i}))}; renderDishModal(); openModal(); }
+
+function renderDishModal(){
+  const isEdit=!!editingDishId, isAddOnly=editModeAddOnly;
+  const title=isEdit?'Editar plato':isAddOnly?`Ajustar y añadir — ${modalMeal}`:`Nuevo plato${modalMeal?' — '+modalMeal:''}`;
+  let ingsHtml='';
+  tempDish.ings.forEach((ing,i)=>{
+    const o=getIng(ing.iid), iK=o?Math.round(o.kcal*ing.a/100):0;
+    ingsHtml+=`<div class="ing-form-row">
+      <div class="suggest-wrap">
+        <input class="form-input" id="dfi${i}" placeholder="Buscar ingrediente..." value="${o?o.name:''}" autocomplete="off" autocorrect="off"
+          oninput="filterIngSugModal(${i},this.value,'d')"
+          onfocus="filterIngSugModal(${i},this.value,'d')"
+          onblur="setTimeout(()=>closeSug('dsl${i}'),200)"/>
+        <ul class="suggest-list" id="dsl${i}"></ul>
+      </div>
+      <input class="form-input sm" type="number" min="1" step="1" value="${ing.a}"
+        oninput="tempDish.ings[${i}].a=parseInt(this.value)||1;refreshDK(${i})"/>
+      <span class="ing-kcal-preview" id="dk${i}">${iK>0?iK+' k':''}</span>
+      <button class="remove-ing" onclick="tempDish.ings.splice(${i},1);renderDishModal()">✕</button>
+    </div>`;
+  });
+  const total=tempDish.ings.reduce((s,i)=>{ const o=getIng(i.iid); return s+(o?Math.round(o.kcal*i.a/100):0); },0);
+  let mealSel=!modalMeal?`<div class="form-row"><label class="form-label">Comida habitual</label>
+    <select class="form-input" onchange="tempDish.meal=this.value">${MEALS.map(m=>`<option value="${m}"${tempDish.meal===m?' selected':''}>${m}</option>`).join('')}</select></div>`:'';
+  const backBtn=isAddOnly?`<button class="btn-cancel" onclick="openPicker('${modalMeal}')">← Volver</button>`:`<button class="btn-cancel" onclick="closeModal()">Cancelar</button>`;
+  let footer=`<div class="modal-footer" style="justify-content:space-between">`;
+  if(isEdit) footer+=`<button class="btn-danger" onclick="deleteDish('${editingDishId}')">🗑</button><div style="display:flex;gap:8px">${backBtn}<button class="btn-save" onclick="saveDishModal()">Guardar</button></div>`;
+  else footer+=`<div></div><div style="display:flex;gap:8px">${backBtn}<button class="btn-save" onclick="saveDishModal()">${isAddOnly?'Añadir al día':'Guardar'}</button></div>`;
+  footer+='</div>';
+  document.getElementById('modalEl').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">${title}</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px">
+      <div style="flex:1"><label class="form-label">Nombre</label>
+        <input class="form-input" placeholder="Nombre del plato" value="${tempDish.name}" oninput="tempDish.name=this.value"/></div>
+      <div><label class="form-label">Emoji</label>
+        <button id="dishEmojiBtn" onclick="openEmojiPicker(tempDish.icon||'🍽️', function(em){tempDish.icon=em; var b=document.getElementById('dishEmojiBtn'); if(b) b.textContent=em;})"
+          style="width:44px;height:42px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:22px;cursor:pointer">${tempDish.icon||'🍽️'}</button>
+      </div>
+    </div>
+    ${mealSel}
+    <div><label class="form-label" style="margin-bottom:8px">Ingredientes ${total>0?`<span style="color:var(--green);font-weight:600;margin-left:6px">${total} kcal total</span>`:''}</label>
+    ${ingsHtml}
+    <button class="add-ing-btn" onclick="tempDish.ings.push({iid:'',a:100});renderDishModal()">+ añadir ingrediente</button></div>
+    ${footer}`;
+}
+
+function filterIngSugModal(i,val,prefix){
+  const listId=prefix+'sl'+i, inputId=prefix+'fi'+i;
+  const list=document.getElementById(listId); if(!list) return;
+  const q=(val||'').toLowerCase();
+  if(!q){ list.classList.remove('open'); return; }
+  const hits=(state.ingredients||[]).filter(ing=>ing.name.toLowerCase().includes(q)||(ing.brand||'').toLowerCase().includes(q)).slice(0,8);
+  if(!hits.length){ list.classList.remove('open'); return; }
+  list.innerHTML=hits.map(ing=>`<li class="suggest-item" onmousedown="pickIngModal(${i},'${ing.id}','${prefix}')">
+    <span>${ing.name}${ing.brand?` <span style="color:var(--text-3)">${ing.brand}</span>`:''}</span>
+    <span class="suggest-item-sub">${ing.kcal}/${ing.unit}</span>
+  </li>`).join('');
+  list.classList.add('open');
+}
+function pickIngModal(i,iid,prefix){
+  tempDish.ings[i].iid=iid;
+  renderDishModal();
+}
+function closeSug(id){ const l=document.getElementById(id); if(l) l.classList.remove('open'); }
+function refreshDK(i){ const ing=tempDish.ings[i],o=getIng(ing.iid),el=document.getElementById('dk'+i); if(el){ const k=o?Math.round(o.kcal*ing.a/100):0; el.textContent=k>0?k+' k':''; } }
+
+function saveDishModal(){
+  if(!tempDish.name.trim()){ alert('Ponle nombre al plato'); return; }
+  const valid=tempDish.ings.filter(i=>i.iid&&getIng(i.iid));
+  if(!valid.length){ alert('Añade al menos un ingrediente'); return; }
+  tempDish.ings=valid;
+  if(editModeAddOnly&&modalMeal){
+    getDayPlan(currentDay)[modalMeal].push({_uid:uid(),name:tempDish.name,icon:tempDish.icon,ings:valid.map(i=>({...i}))});
+    saveState(); closeModal(); render(); toast(`${tempDish.name} añadido ✓`);
+  } else if(editingDishId){
+    const idx=(state.dishes||[]).findIndex(d=>d.id===editingDishId);
+    if(idx>-1) state.dishes[idx]={...state.dishes[idx],name:tempDish.name,icon:tempDish.icon,meal:tempDish.meal,ings:valid};
+    saveState(); closeModal(); render(); toast('Plato actualizado ✓');
+  } else {
+    const dish={id:uid(),name:tempDish.name,icon:tempDish.icon||'🍽️',meal:tempDish.meal||modalMeal||'Comida',ings:valid};
+    if(!state.dishes) state.dishes=[];
+    state.dishes.push(dish);
+    if(modalMeal){ getDayPlan(currentDay)[modalMeal].push({_uid:uid(),name:dish.name,icon:dish.icon,ings:dish.ings.map(i=>({...i}))}); }
+    saveState(); closeModal(); render(); toast(`${dish.name} guardado ✓`);
+  }
+}
+function deleteDish(id){ if(!confirm('¿Eliminar este plato?')) return; state.dishes=(state.dishes||[]).filter(d=>d.id!==id); saveState(); closeModal(); render(); toast('Plato eliminado'); }
+
+// ══════════════════════════════════════════════════════
+//  AÑADIR DESDE LIBRERÍA
+// ══════════════════════════════════════════════════════
+function openLibDishAdd(id){
+  const dish=(state.dishes||[]).find(d=>d.id===id); if(!dish) return;
+  const tot=calcDish(dish);
+  document.getElementById('modalEl').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">${dish.icon||'🍽️'} ${dish.name}</div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:4px">${tot.k} kcal · ${tot.p}g P · ${tot.c}g C · ${tot.g}g G</p>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:1rem">Para el día: <strong>${fmtDate(currentDay)}</strong></p>
+    <label class="form-label">¿En qué comida?</label>
+    <div class="meal-pick-grid">${MEALS.map(m=>`<button class="meal-pick-btn" onclick="quickAdd('${id}','${m}')">${MEAL_ICONS[m]} ${m}</button>`).join('')}</div>`;
+  openModal();
+}
+
+// ══════════════════════════════════════════════════════
+//  MODAL INGREDIENTE
+// ══════════════════════════════════════════════════════
+let tempIng=null, editingIngId=null;
+function openNewIng(){ editingIngId=null; tempIng={name:'',brand:'',kcal:0,p:0,c:0,g:0,f:0,unit:'g',supermarket:'Mercadona',category:'Otros',weight:null,notes:''}; renderIngModal(); openModal(); }
+function openEditIng(id){ const ing=(state.ingredients||[]).find(i=>i.id===id); if(!ing) return; editingIngId=id; tempIng={...ing}; renderIngModal(); openModal(); }
+
+function renderIngModal(){
+  const isEdit=!!editingIngId;
+  const baseCats=Object.keys(CAT_ICONS).sort();
+  const userCats=[...new Set((state.ingredients||[]).map(i=>i.category||'Otros'))].filter(c=>!baseCats.includes(c)).sort();
+  const allCats=[...baseCats,...userCats];
+  const currentCat=tempIng.category||'Otros';
+  const currentEmoji=tempIng.emoji||catIcon(currentCat);
+
+  document.getElementById('modalEl').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">${isEdit?'Editar ingrediente':'Nuevo ingrediente'}</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px">
+      <div style="flex:1"><label class="form-label">Nombre del producto *</label>
+        <input class="form-input" placeholder="Ej: Yogur proteico fresa" value="${tempIng.name}" oninput="tempIng.name=this.value"/></div>
+      <div>
+        <label class="form-label">Emoji</label>
+        <button id="ingEmojiBtn" onclick="openEmojiPicker(tempIng.emoji||catIcon(tempIng.category||'Otros'), function(em){tempIng.emoji=em; var b=document.getElementById('ingEmojiBtn'); if(b) b.textContent=em;})"
+          style="width:44px;height:42px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center">${currentEmoji}</button>
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div><label class="form-label">Marca</label><input class="form-input" placeholder="Hacendado..." value="${tempIng.brand||''}" oninput="tempIng.brand=this.value"/></div>
+      <div><label class="form-label">Supermercado</label><input class="form-input" placeholder="Mercadona..." value="${tempIng.supermarket||''}" oninput="tempIng.supermarket=this.value"/></div>
+    </div>
+    <div class="form-row-2">
+      <div><label class="form-label">Categoría</label>
+        <select class="form-input" onchange="tempIng.category=this.value">
+          ${allCats.map(c=>`<option value="${c}"${currentCat===c?' selected':''}>${catIcon(c)} ${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="form-label">Unidad</label>
+        <select class="form-input" onchange="tempIng.unit=this.value">
+          <option value="g"${tempIng.unit==='g'?' selected':''}>g (sólido)</option>
+          <option value="ml"${tempIng.unit==='ml'?' selected':''}>ml (líquido)</option>
+        </select>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:8px">Valores por 100g / 100ml</p>
+    <div class="form-row-2">
+      <div><label class="form-label">Calorías (kcal) *</label><input class="form-input" type="number" min="0" step="1" value="${tempIng.kcal||0}" oninput="tempIng.kcal=parseFloat(this.value)||0"/></div>
+      <div><label class="form-label">Proteínas (g)</label><input class="form-input" type="number" min="0" step="0.1" value="${tempIng.p||0}" oninput="tempIng.p=parseFloat(this.value)||0"/></div>
+    </div>
+    <div class="form-row-2">
+      <div><label class="form-label">Carbohidratos (g)</label><input class="form-input" type="number" min="0" step="0.1" value="${tempIng.c||0}" oninput="tempIng.c=parseFloat(this.value)||0"/></div>
+      <div><label class="form-label">Grasas (g)</label><input class="form-input" type="number" min="0" step="0.1" value="${tempIng.g||0}" oninput="tempIng.g=parseFloat(this.value)||0"/></div>
+    </div>
+    <div class="form-row-2">
+      <div><label class="form-label">Fibra (g)</label><input class="form-input" type="number" min="0" step="0.1" value="${tempIng.f||0}" oninput="tempIng.f=parseFloat(this.value)||0"/></div>
+      <div><label class="form-label">Peso envase (g/ml)</label><input class="form-input" type="number" min="0" value="${tempIng.weight||''}" placeholder="Ej: 500" oninput="tempIng.weight=parseInt(this.value)||null"/></div>
+    </div>
+    <div class="form-row"><label class="form-label">Notas</label><input class="form-input" placeholder="Ej: sin gluten..." value="${tempIng.notes||''}" oninput="tempIng.notes=this.value"/></div>
+    <div class="modal-footer" style="justify-content:space-between">
+      ${isEdit?`<button class="btn-danger" onclick="deleteIng('${editingIngId}')">🗑 Eliminar</button>`:'<div></div>'}
+      <div style="display:flex;gap:8px">
+        <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn-save" onclick="saveIngModal()">Guardar</button>
+      </div>
+    </div>`;
+}
+
+
+function saveIngModal(){
+  if(!tempIng.name.trim()){ alert('El nombre es obligatorio'); return; }
+  // Detección de duplicados (solo al crear, no al editar)
+  if(!editingIngId){
+    const nameLower=tempIng.name.toLowerCase().trim();
+    const duplicate=(state.ingredients||[]).find(i=>i.name.toLowerCase().trim()===nameLower);
+    if(duplicate){
+      const ok=confirm(`Ya existe un ingrediente llamado "${duplicate.name}"${duplicate.brand?' ('+duplicate.brand+')':''}.\n\n¿Quieres guardarlo igualmente como otro ingrediente?\n(Si quieres editarlo, cancela y búscalo en la librería)`);
+      if(!ok) return;
+    }
+    // También avisar si el nombre es muy parecido (>80% similar)
+    else {
+      const similar=(state.ingredients||[]).find(i=>{
+        const a=i.name.toLowerCase().trim(), b=nameLower;
+        if(Math.abs(a.length-b.length)>6) return false;
+        let matches=0;
+        for(let c of b) if(a.includes(c)) matches++;
+        return matches/b.length>0.85 && a!==b;
+      });
+      if(similar){
+        const ok=confirm(`Hay un ingrediente similar: "${similar.name}"${similar.brand?' ('+similar.brand+')':''}.\n\n¿Son productos distintos y quieres añadirlo igualmente?`);
+        if(!ok) return;
+      }
+    }
+  }
+  if(!tempIng.emoji) tempIng.emoji=catIcon(tempIng.category||'Otros');
+  if(editingIngId){
+    const idx=(state.ingredients||[]).findIndex(i=>i.id===editingIngId);
+    if(idx>-1) state.ingredients[idx]={...state.ingredients[idx],...tempIng};
+  } else {
+    if(!state.ingredients) state.ingredients=[];
+    state.ingredients.push({id:uid(),...tempIng});
+  }
+  saveState(); closeModal(); render(); toast(editingIngId?'Ingrediente actualizado ✓':'Ingrediente guardado ✓');
+}
+function deleteIng(id){ if(!confirm('¿Eliminar este ingrediente?')) return; state.ingredients=(state.ingredients||[]).filter(i=>i.id!==id); saveState(); closeModal(); render(); toast('Ingrediente eliminado'); }
+
+// ══════════════════════════════════════════════════════
+//  ESCANEAR ETIQUETA
+// ══════════════════════════════════════════════════════
+function openScanIng(){
+  document.getElementById('modalEl').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">📷 Escanear etiqueta</div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">Haz una foto a la tabla nutricional y lo añadiremos automáticamente.</p>
+    <button class="camera-btn" onclick="document.getElementById('cameraInput').click()">📷 Hacer foto / elegir imagen</button>
+    <img id="scanPreview" class="scan-preview"/>
+    <div id="scanResult" class="scan-result"></div>
+    <div id="scanStatus" class="scan-status">Analizando imagen...</div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeModal()">Cancelar</button></div>`;
+  openModal();
+  document.getElementById('cameraInput').onchange=handleScan;
+}
+function handleScan(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async function(ev){
+    const b64=ev.target.result.split(',')[1];
+    const prev=document.getElementById('scanPreview');
+    if(prev){ prev.src=ev.target.result; prev.style.display='block'; }
+    const stat=document.getElementById('scanStatus'); if(stat) stat.style.display='block';
+    try{
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:b64}},
+          {type:'text',text:'Analiza esta etiqueta nutricional. Responde SOLO con JSON válido sin texto extra:\n{"name":"nombre del producto","brand":"marca","kcal":número,"p":proteínas,"c":carbohidratos,"g":grasas,"f":fibra o 0,"unit":"g o ml","category":"categoría","weight":peso envase o null}'}
+        ]}]})});
+      const data=await resp.json();
+      const raw=data.content.map(x=>x.text||'').join('');
+      const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+      if(stat) stat.style.display='none';
+      const res=document.getElementById('scanResult');
+      if(res){ res.style.display='block'; res.innerHTML=`<strong>${parsed.name}</strong>${parsed.brand?' · '+parsed.brand:''}<br>${parsed.kcal} kcal · ${parsed.p||0}g P · ${parsed.c||0}g C · ${parsed.g||0}g G`; }
+      tempIng={name:parsed.name||'',brand:parsed.brand||'',kcal:parsed.kcal||0,p:parsed.p||0,c:parsed.c||0,g:parsed.g||0,f:parsed.f||0,unit:parsed.unit||'g',supermarket:'',category:parsed.category||'Otros',weight:parsed.weight||null,notes:''};
+      editingIngId=null;
+      setTimeout(()=>{ closeModal(); renderIngModal(); openModal(); },1200);
+    }catch(err){ if(stat) stat.textContent='Error al analizar. Inténtalo de nuevo.'; console.error(err); }
+  };
+  reader.readAsDataURL(file); e.target.value='';
+}
+
+// ══════════════════════════════════════════════════════
+//  META CALORÍAS
+// ══════════════════════════════════════════════════════
+function openGoalEdit(){
+  document.getElementById('modalEl').innerHTML=`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">⚙️ Meta de calorías diaria</div>
+    <div class="form-row"><label class="form-label">Calorías (kcal)</label>
+      <input class="form-input" id="goalInput" type="number" min="500" max="9999" step="50" value="${getGoal()}"/></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem">
+      ${[1500,1800,2000,2200,2500,2800,3000,3500].map(g=>`<button onclick="document.getElementById('goalInput').value=${g}"
+        style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:${getGoal()===g?'var(--text)':'var(--bg)'};color:${getGoal()===g?'var(--bg)':'var(--text-2)'};cursor:pointer;font-size:13px;font-family:inherit">${g}</button>`).join('')}
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveGoal()">Guardar</button>
+    </div>`;
+  openModal();
+}
+function saveGoal(){ const v=parseInt(document.getElementById('goalInput').value); if(!v||v<500){ alert('Valor no válido'); return; } state.goal=v; saveState(); closeModal(); render(); toast(`Meta: ${v} kcal ✓`); }
+
+// ══════════════════════════════════════════════════════
+//  MODAL UTILS
+// ══════════════════════════════════════════════════════
+function openModal(){ document.getElementById('modalBd').classList.add('open'); }
+function closeModal(){ document.getElementById('modalBd').classList.remove('open'); editingDishId=null; editingIngId=null; editModeAddOnly=false; }
+
+// ══════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+// ══════════════════════════════════════════════════════
+//  EMOJI PICKER
+// ══════════════════════════════════════════════════════
+const EMOJI_DATA = {
+  'Comida':['🍽️','🥗','🥣','🥘','🍲','🫕','🥫','🍱','🥡','🍛','🍜','🍝','🍠','🍢','🧆','🥙','🫔','🌮','🌯','🥪','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕','🫓','🥐','🍞','🥖','🥨'],
+  'Frutas':['🍎','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍑','🍒','🍍','🥭','🥥','🍅','🫒','🥝','🍆','🥑','🫑'],
+  'Verduras':['🥦','🥕','🌽','🧅','🧄','🥔','🍠','🫛','🥜','🌰','🫘','🥗','🥬','🥒','🌶️','🫚'],
+  'Carne y pescado':['🥩','🍗','🍖','🥚','🍳','🦐','🦞','🦀','🦑','🐟','🐠','🐡','🦈','🐙','🦪','🍣','🍤','🍱'],
+  'Lácteos':['🥛','🧀','🫙','🍦','🍧','🍨','🍰','🎂'],
+  'Cereales':['🌾','🍞','🥐','🥖','🥨','🧆','🥞','🧇','🍚','🍙','🍘','🍥'],
+  'Bebidas':['☕','🍵','🧃','🥤','🧋','🍶','🍺','🥂','🍷','🧉','💧','🫖'],
+  'Dulces':['🍫','🍬','🍭','🍮','🍯','🧁','🍩','🍪','🎂','🍰','🍡','🍢','🍧'],
+  'Frutos secos':['🥜','🌰','🫘','🧈'],
+  'Suplementos':['💪','🏋️','⚡','🔋','💊','🧪','🫙'],
+  'Otros':['🛒','📦','🧂','🫙','🏪','🏬','⭐','❤️','✅','🔥','💚','🌿','🍀','🌱'],
+};
+const EP_CAT_ICONS = {'Comida':'🍽️','Frutas':'🍓','Verduras':'🥦','Carne y pescado':'🥩','Lácteos':'🥛','Cereales':'🌾','Bebidas':'☕','Dulces':'🍬','Frutos secos':'🥜','Suplementos':'💪','Otros':'📦'};
+
+let emojiCallback=null, emojiSearch='', emojiActiveCat='Comida', emojiSelected='';
+
+function openEmojiPicker(currentEmoji, onPick){
+  emojiCallback=onPick;
+  emojiSearch='';
+  emojiActiveCat='Comida';
+  emojiSelected=currentEmoji||'';
+  renderEmojiPicker();
+  document.getElementById('emojiPickerModal').classList.add('open');
+}
+
+function renderEmojiPicker(){
+  const q=emojiSearch.toLowerCase();
+  let bodyHtml='';
+
+  if(q){
+    // Buscar en todos los emojis (por nombre aproximado no disponible, mostrar todos filtrados visualmente)
+    const allEmojis=[...new Set(Object.values(EMOJI_DATA).flat())];
+    bodyHtml=`<div class="ep-section-title">Resultados</div><div class="ep-grid">
+      ${allEmojis.map(e=>`<button class="ep-emoji${emojiSelected===e?' '+'ep-sel':''}" onclick="selectEmoji('${e}')" style="${emojiSelected===e?'background:var(--green-light);outline:2px solid var(--green-mid)':''}">${e}</button>`).join('')}
+    </div>`;
+  } else {
+    const cats=Object.keys(EMOJI_DATA);
+    const showCats=emojiActiveCat==='all'?cats:[emojiActiveCat];
+    showCats.forEach(cat=>{
+      bodyHtml+=`<div class="ep-section-title">${EP_CAT_ICONS[cat]||'📦'} ${cat}</div>
+        <div class="ep-grid">
+          ${EMOJI_DATA[cat].map(e=>`<button class="ep-emoji" onclick="selectEmoji('${e}')" style="${emojiSelected===e?'background:var(--green-light);outline:2px solid var(--green-mid);border-radius:6px':''}">${e}</button>`).join('')}
+        </div>`;
+    });
+  }
+
+  const catBtns=Object.keys(EMOJI_DATA).map(cat=>
+    `<button class="ep-cat-btn${emojiActiveCat===cat?' active':''}" onclick="setEpCat('${cat}')" title="${cat}">${EP_CAT_ICONS[cat]||'📦'}</button>`
+  ).join('');
+
+  document.getElementById('emojiPickerInner').innerHTML=`
+    <div class="ep-header">
+      <input class="ep-search" placeholder="Buscar emoji..." value="${emojiSearch}"
+        id="epSearchInput" autocomplete="off" autocorrect="off"/>
+    </div>
+    <div class="ep-cats">${catBtns}</div>
+    <div class="ep-body" id="epBody">${bodyHtml}</div>
+    <div class="ep-footer">
+      <div class="ep-preview">${emojiSelected||'?'}</div>
+      <span class="ep-footer-hint">${emojiSelected?'Seleccionado':'Toca un emoji'}</span>
+      <button class="ep-confirm" onclick="confirmEmoji()">Elegir</button>
+    </div>`;
+
+  // Attach search
+  const epsi=document.getElementById('epSearchInput');
+  if(epsi){
+    epsi.focus();
+    epsi.addEventListener('input',function(){ emojiSearch=this.value; renderEmojiPicker(); setTimeout(()=>{const e=document.getElementById('epSearchInput');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},10); });
+  }
+}
+
+function setEpCat(cat){ emojiActiveCat=cat; emojiSearch=''; renderEmojiPicker(); }
+
+function selectEmoji(e){
+  emojiSelected=e;
+  // Update preview without full re-render
+  const prev=document.querySelector('.ep-preview'); if(prev) prev.textContent=e;
+  const hint=document.querySelector('.ep-footer-hint'); if(hint) hint.textContent='Seleccionado';
+  // Update highlight
+  document.querySelectorAll('.ep-emoji').forEach(btn=>{
+    const isSelected=btn.textContent===e;
+    btn.style.background=isSelected?'var(--green-light)':'';
+    btn.style.outline=isSelected?'2px solid var(--green-mid)':'';
+  });
+}
+
+function confirmEmoji(){
+  if(!emojiSelected) return;
+  if(emojiCallback) emojiCallback(emojiSelected);
+  document.getElementById('emojiPickerModal').classList.remove('open');
+}
+
+function closeEmojiPicker(){
+  document.getElementById('emojiPickerModal').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+initFirebase();
+loadState();
+</script>
+</body>
+</html>
